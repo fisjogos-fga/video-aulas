@@ -1,0 +1,6 @@
+tmp
+__pycache__
+.idea/
+.vscode/
+*.raw.mkv
+.ipynb_checkpoints/
