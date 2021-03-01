@@ -1,9 +1,12 @@
 import pyxel
 import random
 
+FPS = 30
+
 
 class Body:
     color = pyxel.COLOR_WHITE
+    ay = 50
 
     def __init__(self, x, y, vx=0, vy=0):
         self.x = x
@@ -12,15 +15,19 @@ class Body:
         self.vy = vy
 
     def update(self):
-        self.x += self.vx
-        self.y += self.vy
+        dt = 1 / FPS
+        self.x = self.x + self.vx * dt
+        self.y = self.y + self.vy * dt + self.ay / 2 * dt**2
+        self.vx = self.vx
+        self.vy = self.vy + self.ay * dt
 
     def draw(self):
         pyxel.pset(self.x, self.y, self.color)
 
 
 class Ball(Body):
-    speed = 2
+    speed = 2 * FPS  # [px/s]
+    color = pyxel.COLOR_RED
 
     def __init__(self, x, y, vx=0, vy=0, radius=3):
         super().__init__(x, y, vx, vy)
@@ -66,7 +73,7 @@ class Ball(Body):
 class Paddle(Body):
     width = 4
     height = 16
-    speed = 1
+    speed = 1 * FPS
 
     @property
     def top(self):
@@ -120,6 +127,6 @@ def draw():
 player1 = Paddle(5, 60, key_up=pyxel.KEY_W, key_down=pyxel.KEY_S)
 player2 = Paddle(175, 60, key_up=pyxel.KEY_UP, key_down=pyxel.KEY_DOWN)
 objects = [Ball(90, 60), player1, player2]
-pyxel.init(180, 120)
+pyxel.init(180, 120, fps=FPS)
 pyxel.mouse(True)
 pyxel.run(update, draw)
