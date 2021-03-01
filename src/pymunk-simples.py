@@ -46,7 +46,7 @@ class Game:
         ]
         for shape in self.boders:
             shape.elasticity = 1.0
-        self.space.add(self.boders)
+        self.space.add(*self.boders)
 
     def update(self):
         n = 10

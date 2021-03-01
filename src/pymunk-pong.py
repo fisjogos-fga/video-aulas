@@ -4,6 +4,7 @@ from pymunk import Space, Body, Circle, Poly, Segment, BB
 
 FPS = 30
 
+
 def make_ball(x, y):
     def update():
         nonlocal paused
@@ -21,13 +22,13 @@ def make_ball(x, y):
 
     body.update = update
     paused = True
-    speed = 50 
+    speed = 50
     return body, shape
 
 
 def make_player(x, y, *, key_up, key_down):
     speed = 30
-    
+
     def update():
         if pyxel.btn(key_up):
             body.velocity = (0, -speed)
@@ -39,13 +40,13 @@ def make_player(x, y, *, key_up, key_down):
     body = Body(body_type=Body.KINEMATIC)
     body.update = update
     body.position = (x, y)
-    
+
     width = 4
     height = 16
     a, b = width / 2, height / 2
     shape = Poly(body, [(-a, -b), (a, -b), (a, b), (-a, b)])
     shape.elasticity = 1.0
-    
+
     return body, shape
 
 
@@ -60,9 +61,10 @@ def make_borders():
 def update():
     dt = 1 / FPS
     for body in space.bodies:
-        if hasattr(body, 'update'):
+        if hasattr(body, "update"):
             body.update()
     space.step(dt)
+
 
 def draw():
     pyxel.cls(pyxel.COLOR_BLACK)
@@ -76,16 +78,18 @@ def draw():
             bb: BB = shape.bb
             x = bb.left
             y = bb.bottom
-            width = bb.right - bb.left 
+            width = bb.right - bb.left
             height = bb.top - bb.bottom
             pyxel.rect(x, y, width, height, pyxel.COLOR_WHITE)
 
 
 space = Space()
-space.add(make_ball(90, 60))
-space.add(make_player(5, 60, key_up=pyxel.KEY_W, key_down=pyxel.KEY_S))
-space.add(make_player(175, 60, key_up=pyxel.KEY_UP, key_down=pyxel.KEY_DOWN))
-space.add(make_borders())
+space.add(
+    *make_ball(90, 60),
+    *make_player(5, 60, key_up=pyxel.KEY_W, key_down=pyxel.KEY_S),
+    *make_player(175, 60, key_up=pyxel.KEY_UP, key_down=pyxel.KEY_DOWN),
+    *make_borders(),
+)
 
 pyxel.init(180, 120, fps=FPS)
 pyxel.mouse(True)
