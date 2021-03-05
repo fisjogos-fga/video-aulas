@@ -1,15 +1,23 @@
 import pyxel
-from random import uniform, choice
-from pymunk import Space, Body, Circle, Segment, Vec2d
+from pymunk import Space, Body, Circle, Vec2d, ShapeFilter
+from pymunk import PivotJoint
+from code import InteractiveConsole
+from threading import Thread
 
 
-def make_ball(x, y, vx, vy):
+def make_ball(x, y, ground):
     body = Body(mass=1, moment=1)
     circle = Circle(body, 5)
     circle.elasticity = 1.0
     body.position = (x, y)
-    body.velocity = (vx, vy)
-    return body, circle 
+
+    pivot = PivotJoint(body, ground, body.position + Vec2d(0, -100))
+    return body, circle, pivot 
+
+
+def make_shell():
+    shell = InteractiveConsole(globals())
+    shell.interact()
 
 
 class Game:
@@ -20,36 +28,32 @@ class Game:
     border_color = pyxel.COLOR_RED
 
     def __init__(self, fps=30, width=256, height=196, speed=50):
-        x = lambda: uniform(5, width - 5)
-        y = lambda: uniform(5, height - 5)
-        v = lambda: choice([-speed, speed])
-
         self.fps = fps
         self.width = width
         self.height = height
+        self.paused = False
 
         self.space = Space()
-        self.space.gravity = (0, 50)
+        self.space.gravity = (0, 100)
 
         # Cria círculos
-        for _ in range(10):
-            self.space.add(*make_ball(x(), y(), v(), v()))
+        ground = self.space.static_body
+        for i in range(10):
+            self.space.add(*make_ball(136/2 + i * 12, 98, ground))
 
-        # Cria bordas
-        w, h = self.width, self.height
-        self.borders = [
-            Segment(self.space.static_body, (0, h), (w, h), 1),
-            Segment(self.space.static_body, (0, 0), (w, 0), 1),
-            Segment(self.space.static_body, (0, 0), (0, h), 1),
-            Segment(self.space.static_body, (w, 0), (w, h), 1),
-        ]
-        for shape in self.borders:
-            shape.elasticity = 1.0
-        self.space.add(*self.borders)
 
     def update(self):
-        dt = 1 / self.fps
-        self.space.step(dt)
+        if not self.paused:
+            dt = 1 / self.fps
+            self.space.step(dt)
+
+        if pyxel.btn(pyxel.MOUSE_LEFT_BUTTON):
+            pos = pyxel.mouse_x, pyxel.mouse_y
+            lst = self.space.point_query(pos, 3, ShapeFilter())
+            lst.sort(key=lambda i: i.distance)
+            if lst:
+                info = lst[0]
+                info.shape.body.velocity = (100, 0)
         
     def draw(self):
         pyxel.cls(pyxel.COLOR_BLACK)
@@ -75,6 +79,7 @@ class Game:
         pyxel.run(self.update, self.draw)
 
 
-
 game = Game()
+# thread = Thread(target=make_shell)
+# thread.start()
 game.run()
