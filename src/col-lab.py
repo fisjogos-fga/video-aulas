@@ -52,7 +52,7 @@ class Game:
         circle = Circle(self.focus, 15)
         circle.elasticity = 1
         self.space.add(self.focus, circle)
-        
+
         positions = [(200, 100), (200, 50), (200, 150)]
         for pos in positions:
             b = Body(10, float("inf"))
@@ -71,10 +71,9 @@ class Game:
         for shape in self.borders:
             shape.elasticity = 1.0
         self.space.add(*self.borders)
-        
+
         self.space.step(0.001)
         self.mass.value = self.focus.mass
-        
 
     def update(self):
         self.update_widgets()
@@ -92,7 +91,7 @@ class Game:
 
     def update_widgets(self):
         self.ui.update_widgets()
-        
+
         for shape in self.space.shapes:
             shape.elasticity = self.elasticity.value / 100
             shape.friction = self.friction.value / 100
@@ -100,13 +99,13 @@ class Game:
 
         self.focus.mass = self.mass.value
         if self.moment.value == 100:
-            self.focus.moment = float('inf')
+            self.focus.moment = float("inf")
         else:
             self.focus.moment = self.moment.value * MOMENT_FACTOR
 
     def update_focus(self):
         mouse_pos = Vec2d(pyxel.mouse_x, pyxel.mouse_y)
-        focus = self.focus     
+        focus = self.focus
 
         for info in self.space.point_query(mouse_pos, 1, ShapeFilter()):
             if info.shape.body != self.space.static_body:
@@ -129,12 +128,12 @@ class Game:
 
         # Desenha widgets
         self.ui.draw_widgets()
-        pyxel.text(0, 0, 'e:', pyxel.COLOR_WHITE)
-        pyxel.text(0, 10, 'mu:', pyxel.COLOR_WHITE)
-        pyxel.text(0, 20, 'g:', pyxel.COLOR_WHITE)
-        pyxel.text(0, 30, 'm:', pyxel.COLOR_WHITE)
-        pyxel.text(0, 40, 'I:', pyxel.COLOR_WHITE)
-        pyxel.text(0, 50, 'aperte <shift>', pyxel.COLOR_DARKBLUE)
+        pyxel.text(0, 0, "e:", pyxel.COLOR_WHITE)
+        pyxel.text(0, 10, "mu:", pyxel.COLOR_WHITE)
+        pyxel.text(0, 20, "g:", pyxel.COLOR_WHITE)
+        pyxel.text(0, 30, "m:", pyxel.COLOR_WHITE)
+        pyxel.text(0, 40, "I:", pyxel.COLOR_WHITE)
+        pyxel.text(0, 50, "aperte <shift>", pyxel.COLOR_DARKBLUE)
 
         # Desenha elementos do espaço
         for shape in self.space.shapes:
@@ -167,32 +166,35 @@ class Game:
     def draw_arbiter(self, arb: Arbiter):
         pset = arb.contact_point_set
         x, y = pt = pset.points[0].point_a
-        
-        color = pyxel.COLOR_GREEN if arb.is_first_contact else  pyxel.COLOR_RED
-        
+
+        color = pyxel.COLOR_GREEN if arb.is_first_contact else pyxel.COLOR_RED
+
         for pc in pset.points:
             pyxel.circ(*pc.point_a, 3, color)
             pyxel.circ(*pc.point_b, 3, color)
         pyxel.line(*pt, *(pt + 500 * arb.normal), color)
         pyxel.line(*pt, *(pt - 500 * arb.normal), color)
 
-        fields = {"mu": "friction", "e": "restitution",
-                  "dK": "total_ke", "J": "total_impulse"}
+        fields = {
+            "mu": "friction",
+            "e": "restitution",
+            "dK": "total_ke",
+            "J": "total_impulse",
+        }
         show(x, y - 28, arb, fields, color)
 
     def arbiters(self):
         bodies = set()
         for b in self.space.bodies:
-            arbiters = []
-            b.each_arbiter(arbiters.append)
-            for arb in arbiters:
+            iter_arbiters = []
+            b.each_arbiter(iter_arbiters.append)
+            for arb in iter_arbiters:
                 arb: Arbiter
                 bs = {s.body for s in arb.shapes}
                 if bs.intersection(bodies):
                     continue
                 yield arb
             bodies.add(b)
-
 
     def run(self):
         pyxel.init(self.width, self.height, caption="Simulação de física", fps=self.fps)
