@@ -3,7 +3,7 @@
 #
 import random
 import pyxel
-from easymunk import Space, Body, Circle, Vec2d, Arbiter, march_string
+from easymunk import Vec2d, Arbiter, march_string
 from easymunk import pyxel as phys
 
 WIDTH, HEIGHT = 256, 196
@@ -108,22 +108,29 @@ class Game:
         self.register_collision_events()
 
     def register_collision_events(self):
-        @self.space.post_solve_collision(self.PLAYER_COL_TYPE, ...)
+        space = self.space
+
+        @space.post_solve_collision(self.PLAYER_COL_TYPE, ...)
         def _(arb: Arbiter):
             n = arb.normal_from(self.player)
-            self.can_jump = n.y < -0.5
+            self.can_jump = n.y <= -0.5
 
-        @self.space.separate_collision(self.PLAYER_COL_TYPE, ...)
+        @space.separate_collision(self.PLAYER_COL_TYPE, ...)
         def _(arb: Arbiter):
             self.can_jump = False
 
-        @self.space.post_solve_collision(self.PLAYER_COL_TYPE, self.ENEMY_COL_TYPE)
+        @space.post_solve_collision(self.PLAYER_COL_TYPE, self.ENEMY_COL_TYPE)
         def _(arb: Arbiter):
             n = arb.normal_from(self.player)
-            self.game_over = n.y > 0.25
-            self.player.friction = 1.0
+            if n.y < 0.25:
+                enemy = arb.other(self.player)
+                space.remove(enemy.shape)
+                space.remove(enemy)
+            else:
+                self.game_over = True 
+                self.player.friction = 1.0
 
-        @self.space.begin_collision(self.PLAYER_COL_TYPE, self.END_COL_TYPE)
+        @space.begin_collision(self.PLAYER_COL_TYPE, self.END_COL_TYPE)
         def _(arb: Arbiter):
             self.has_won = True
             return False
