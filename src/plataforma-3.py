@@ -239,11 +239,11 @@ class Game:
         self.state = GameState.HAS_WON
 
     def draw(self):
-        pyxel.cls(pyxel.COLOR_LIGHTBLUE)
+        pyxel.cls(0)
         for body in self.space.bodies:
-            try:
+            if isinstance(body, (Player, Enemy)):
                 body.draw(self.camera)
-            except AttributeError:
+            else:
                 self.camera.draw(body)
 
         msg = ""
